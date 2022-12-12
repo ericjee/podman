@@ -348,7 +348,7 @@ func Init(home string, options graphdriver.Options) (graphdriver.Driver, error) 
 		var contents string
 		flagContent, err := os.ReadFile(getMountProgramFlagFile(home))
 		if err == nil {
-			contents = string.TrimSpace(string(flagContent))
+			contents = strings.TrimSpace(string(flagContent))
 		}
 		if contents == "true" {
 			logrus.Debugf("overlay: storage already configured with a mount-program")
