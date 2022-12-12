@@ -2079,24 +2079,20 @@ func (c *Container) saveSpec(spec *spec.Spec) error {
 			return fmt.Errorf("doing stat on container %s spec: %w", c.ID(), err)
 		}
 		// The spec does not exist, we're fine
+		fileJSON, err := json.Marshal(spec)
+		if err != nil {
+			return fmt.Errorf("exporting runtime spec for container %s to JSON: %w", c.ID(), err)
+		}
+		if err := os.WriteFile(jsonPath, fileJSON, 0644); err != nil {
+			return fmt.Errorf("writing runtime spec JSON for container %s to disk: %w", c.ID(), err)
+		}
+		logrus.Debugf("Created OCI spec for container %s at %s", c.ID(), jsonPath)
+		c.state.ConfigPath = jsonPath
+		// The spec does not exist, we're fine
 	} else {
 		// The spec exists, need to remove it
-		if err := os.Remove(jsonPath); err != nil {
-			return fmt.Errorf("replacing runtime spec for container %s: %w", c.ID(), err)
-		}
+		return nil
 	}
-
-	fileJSON, err := json.Marshal(spec)
-	if err != nil {
-		return fmt.Errorf("exporting runtime spec for container %s to JSON: %w", c.ID(), err)
-	}
-	if err := os.WriteFile(jsonPath, fileJSON, 0644); err != nil {
-		return fmt.Errorf("writing runtime spec JSON for container %s to disk: %w", c.ID(), err)
-	}
-
-	logrus.Debugf("Created OCI spec for container %s at %s", c.ID(), jsonPath)
-
-	c.state.ConfigPath = jsonPath
 
 	return nil
 }
